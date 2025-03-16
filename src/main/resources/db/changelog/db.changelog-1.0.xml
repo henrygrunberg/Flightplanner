@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet id="28022025-1" author="henrygrunberg">
+        <createTable tableName="customer">
+            <column name="customer_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(100)"/>
+            <column name="password" type="varchar(255)"/>
+            <column name="balance" type="decimal(10,2)"/>
+        </createTable>
+
+        <createTable tableName="airline">
+            <column name="airline_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="cs_mail" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="airplane">
+            <column name="airplane_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="airline_id" type="bigint">
+                <constraints foreignKeyName="fk_airplane_airline" references="airline(airline_id)" nullable="false"/>
+            </column>
+            <column name="model" type="varchar(50)">
+            </column>
+            <column name="tail_number" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="seat_row">
+            <column name="seat_row_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="airplane_id" type="bigint">
+                <constraints foreignKeyName="fk_seat_row_airplane" references="airplane(airplane_id)" nullable="false"/>
+            </column>
+            <column name="row_number" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seat_count" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="seat_layout">
+            <column name="seat_layout_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="row_id" type="bigint">
+                <constraints foreignKeyName="fk_seat_layout_seat_row" references="seat_row(seat_row_id)" nullable="false"/>
+            </column>
+            <column name="seat_position" type="varchar(2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seat_class" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_window" type="boolean" defaultValueBoolean="false"/>
+            <column name="is_aisle" type="boolean" defaultValueBoolean="false"/>
+            <column name="is_extra_legroom" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <createTable tableName="flight">
+            <column name="flight_id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="airline_id" type="bigint">
+                <constraints foreignKeyName="fk_flight_airline" references="airline(airline_id)" nullable="false"/>
+            </column>
+            <column name="airplane_id" type="bigint">
+                <constraints foreignKeyName="fk_flight_airplane" references="airplane(airplane_id)" nullable="false"/>
+            </column>
+            <column name="departure" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="departure_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="arrival_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="seat">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="flight_id" type="bigint">
+                <constraints foreignKeyName="fk_seat_flight" references="flight(flight_id)" nullable="false"/>
+            </column>
+            <column name="seat_layout_id" type="bigint">
+                <constraints foreignKeyName="fk_seat_layout" references="seat_layout(seat_layout_id)" nullable="false"/>
+            </column>
+            <column name="is_available" type="boolean" defaultValueBoolean="true"/>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="02032025-1" author="henrygrunberg">
+        <dropTable tableName="customer"/>
+
+        <createTable tableName="bookings">
+            <column name="booking_id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="flight_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_bookings_flight" references="flight(flight_id)"/>
+            </column>
+            <column name="passenger_name" type="varchar(100)" />
+            <column name="nationality" type="varchar(50)" />
+            <column name="passport_number" type="varchar(20)" />
+            <column name="seat_class" type="varchar(20)" />
+            <column name="seat_number" type="varchar(10)" />
+            <column name="booking_status" type="varchar(20)" defaultValue="CONFIRMED" />
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createTable tableName="bookings_backup">
+            <column name="booking_id" type="integer" />
+            <column name="flight_id" type="integer" />
+            <column name="passenger_name" type="varchar(100)" />
+            <column name="nationality" type="varchar(50)" />
+            <column name="passport_number" type="varchar(20)" />
+            <column name="seat_class" type="varchar(20)" />
+            <column name="seat_number" type="varchar(10)" />
+            <column name="booking_status" type="varchar(20)" />
+            <column name="created_at" type="TIMESTAMP"/>
+        </createTable>
+
+    <!-- Create the database trigger for automatic backup -->
+        <sql splitStatements="false" endDelimiter="$$">
+            CREATE OR REPLACE FUNCTION backup_bookings()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF TG_OP = 'INSERT' THEN
+                    INSERT INTO bookings_backup (booking_id, flight_id, passenger_name, nationality, passport_number, seat_class, seat_number, booking_status, created_at)
+                    VALUES (NEW.booking_id, NEW.flight_id, NEW.passenger_name, NEW.nationality, NEW.passport_number, NEW.seat_class, NEW.seat_number, NEW.booking_status, NEW.created_at);
+                ELSIF TG_OP = 'UPDATE' THEN
+                    UPDATE bookings_backup
+                    SET flight_id = NEW.flight_id,
+                        passenger_name = NEW.passenger_name,
+                        nationality = NEW.nationality,
+                        passport_number = NEW.passport_number,
+                        seat_class = NEW.seat_class,
+                        seat_number = NEW.seat_number,
+                        booking_status = NEW.booking_status,
+                        created_at = NEW.created_at
+                    WHERE booking_id = OLD.booking_id;
+                ELSIF TG_OP = 'DELETE' THEN
+                    DELETE FROM bookings_backup WHERE booking_id = OLD.booking_id;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        </sql>
+
+        <sql>
+            CREATE TRIGGER trigger_backup_bookings
+            AFTER INSERT OR UPDATE OR DELETE
+            ON bookings
+            FOR EACH ROW
+            EXECUTE FUNCTION backup_bookings();
+        </sql>
+    </changeSet>
+
+    <changeSet id="12032025-2" author="henrygrynberg">
+        <sql>
+            ALTER TABLE bookings ALTER COLUMN booking_status SET DEFAULT 'PENDING';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
